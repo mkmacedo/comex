@@ -1,11 +1,13 @@
 import cv2
 import re
 import pytesseract
-from dictionaries import companies, listaCNPJ
+from dictionaries import companies, listaCNPJ, mapNameCNPJ
+from LCS import lcs
 
 from PIL import Image
 from fuzzywuzzy import fuzz
-#from fuzzywuzzy import process
+from fuzzywuzzy import process
+
 
 
 def runTesseractOCR(img_path):
@@ -15,6 +17,12 @@ def runTesseractOCR(img_path):
     cnpjFlag = False
     flagVencimento = False
     valorTotal = False
+    flagNameFromCNPJ = False
+    vencFlag = True
+
+    vencimentoChoices = ['DATA', 'VENCIMENTO', 'DATA VENCIMENTO', 'DATA DE VENCIMENTO']
+
+    nameLCS = 0
     
     #save_folder = './output/table'
     img = cv2.imread(img_path)
@@ -29,7 +37,7 @@ def runTesseractOCR(img_path):
     for r in tempResult:
         if r != '':
             result.append(r)
-    #print(result)
+    print(result)
     print(f'Inicio {img_path} ')
 
     for line in result:
@@ -123,11 +131,42 @@ def runTesseractOCR(img_path):
                 if vencimento != None:
                     jsonResult['vencimento'] = vencimento.group()
 
+            
+        #Vencimento
+        if process.extractOne(line.upper(), vencimentoChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
+            flagVencimento = True
+            if jsonResult.get('vencimento') != None:
+                if process.extractOne(line.upper(), vencimentoChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempVencimento.upper(), vencimentoChoices, scorer=fuzz.ratio)[1] \
+                    and re.search(r'[0-9]+/[0-9]+/[0-9]+', line) != None:
+                    tempVencimento = line
+                    jsonResult['vencimento'] = line
+                    vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', line)
+                    if vencimento != None:
+                        jsonResult['vencimento'] = vencimento.group()
+            else:
+                jsonResult['vencimento'] = line
+                vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', line)
+                if vencimento != None:
+                    jsonResult['vencimento'] = vencimento.group()
+
+        if flagVencimento == True and vencFlag == False:
+            vencimentoCount += 1
+            if vencimentoCount <= 5:
+                vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', s)
+                if vencimento != None:
+                    jsonResult['vencimento'] = vencimento.group()
+            else:
+                vencFlag = True
+
 
         #nome
-        for company in companies:
-            if fuzz.token_set_ratio(str(line), company) > 80:
-                jsonResult['nome'] = company
+        if flagNameFromCNPJ == False:
+            for company in companies:
+                n = fuzz.partial_ratio(line.upper(), company)
+                tempLCS = lcs(line.upper(), company)
+                if n > 90 and tempLCS > nameLCS:
+                    jsonResult['nome'] = company
+                    nameLCS = tempLCS
 
         if fuzz.token_set_ratio(str(line), 'Valor Total') > 80:
             valorTotal = True
@@ -143,6 +182,8 @@ def runTesseractOCR(img_path):
                 if fuzz.token_set_ratio(str(line), num) > 90:
                     jsonResult['CNPJ'] = num
                     cnpjFlag = True
+                    jsonResult['nome'] = mapNameCNPJ[num]
+                    flagNameFromCNPJ = True
                     break
                 else:
                     cnpj = re.findall(r'[0-9]+', num)
@@ -152,6 +193,8 @@ def runTesseractOCR(img_path):
                     if fuzz.token_set_ratio(str(line), stringCNPJ) > 90:
                         jsonResult['CNPJ'] = num
                         cnpjFlag = True
+                        jsonResult['nome'] = mapNameCNPJ[num]
+                        flagNameFromCNPJ = True
                         break
 
 
@@ -162,5 +205,5 @@ def runTesseractOCR(img_path):
     return jsonResult
 
 
-#res = runPaddleOCR('page0.jpg')
-#print(res)
+res = runTesseractOCR('20FS137029A_0.jpg')
+print(res)

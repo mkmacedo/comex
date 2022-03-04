@@ -1,3 +1,4 @@
+from re import M
 from DescricaoNFS import getCleanDescriptionType1
 
 docs_std_resolution = {
@@ -17,7 +18,7 @@ docs_std_resolution = {
                         None:{'fatura_frete': (1241,1755)},
                         'MULTIRIO':{'NFS':(1240,1755),'boleto':(1240,1755)},
                         'ICTSI':{'NFS':(1240,1755),'boleto':(1240,1755), 'detalhamento_notafiscal': (1653,2339)},
-                        'DHL':{'nota_debito':(1240,1755),'NFS':(1240,1755)},
+                        'DHL':{'nota_debito':(1240,1755),'NFS':(1240,1755), 'cotacao': (1653, 2339)},
                         'MULTITERMINAIS':{'minuta_calculo':(1275,1650),'boleto':(1240,1755)},
                         'SENIOR': {'NFS': (2480, 3525)},
                         'KN': {'nota_debito': (1654, 2339)},
@@ -27,7 +28,7 @@ docs_std_resolution = {
 dict_document = {
                 'NFS': ['CNPJ', 'con', 'vencimento', 'nome', 'PO', 'valor', 'descricao','pesoBruto', 'taxaCambio'],  #'desconto'],
                 'recibo_locacao': ['con', 'nome', 'PO', 'valor'],# 'contaContabil', 'centroCusto','desconto'],
-                'nota_debito': ['con', 'CNPJ' 'vencimento', 'nome', 'qtdContainer', 'valor','origem'], #'descricao','desconto'],
+                'nota_debito': ['con', 'CNPJ', 'vencimento', 'emissao', 'nome', 'qtdContainer', 'valor','origem'], #'descricao','desconto'],
                 'mapa_faturamento': ['PO', 'con', 'valor', 'nome', 'CNPJ'],#'desconto'],
                 'fatura_duplicata': ['con', 'CNPJ', 'vencimento', 'nome', 'PO', 'valor', 'descricao', 'desconto'],#'desconto','valorAPagar']
                 'custo_frete':['nome', 'con','CNPJ','valor'], 
@@ -35,7 +36,8 @@ dict_document = {
                 'fatura_frete':['CNPJ','vencimento','valor'],
                 'detalhamento_notafiscal':['valor','valorSemImposto','CIF','taxa','descricao','nome','moeda', 'dataEntrada', 'dataSaida'], #'tipoServico','periodo'
                 'minuta_calculo':['nome','valorCIF','valor','CNTR','descricao','periodo','dataEntrada', 'dataSaida'],#periodo = data de envio até data chegada
-                'boleto':['valor','data','con']
+                'boleto':['valor','data','con'],
+                'cotacao': ['sellID', 'tmsID', 'valorAEC', 'valorACC', 'valorAPB', 'nome']
                  }
 
 docTypeMap = {'mapa de faturamento': 'mapa_faturamento',
@@ -65,11 +67,15 @@ docTypeMap = {'mapa de faturamento': 'mapa_faturamento',
                 'detalhamento dos itens da nota fiscal': 'detalhamento_notafiscal',
                 'minuta de calculo':'minuta_calculo',
                 'minuta calculo':'minuta_calculo',
-                'Minuta de Cáculo':'minuta_calculo'
+                'Minuta de Cáculo':'minuta_calculo',
+                'Air Freight Shipment Specific Quotation for MERCK SA': 'cotacao',
+                'Specific Quotation': 'cotacao',
+                'Air Freight Shipment': 'cotacao'
                 }
 
 docHierarchy = {
-                'boleto':11,
+                'cotacao': 12,
+                'boleto': 11,
                 'minuta_calculo': 10,
                 'detalhamento_notafiscal': 9,
                 'fatura_frete': 8,
@@ -120,7 +126,7 @@ dict_map['SHIFT']['NFS'] = {'CNPJ': ( 445, 753, 582, 619), 'con': (1919, 2159, 2
 #dict_map['SHIFT']['recibo_locacao'] = {}
 #dict_map['SHIFT']['fatura_duplicata'] = {}
 dict_map['SHIFT']['nota_debito'] = {'con': ( 557, 703, 853, 893), 'vencimento': (1763, 1973, 850, 899),
-                          'nome': (167, 1485, 213, 285), 'PO': (617, 855, 1960, 2020), 'valor': (1947,2191, 2801, 2860), 'descricao': (167, 1147, 2012, 2104)}
+                          'nome': (167, 1485, 213, 285), 'PO': (617, 855, 1960, 2020), 'valor': (1947,2191, 2801, 2860), 'descricao': (167, 1147, 2012, 2104), 'emissao': (10,20,10,20)}
 
 #RUNTEC
 dict_map['RUNTEC'] = {}
@@ -259,7 +265,9 @@ dict_map['DHL']['NFS'] = {'CNPJ': (361,571,249,267), 'con': (970,1042,54,73), 'v
 #dict_map['DHL']['mapa_faturamento'] = {}
 #dict_map['DHL']['recibo_locacao'] = {}
 dict_map['DHL']['nota_debito'] = {'con': (1089,1155, 21, 40), 'vencimento': (865,945,171,190),
-                          'nome': (267,600,45,77), 'valor': (969,1200,1423,1445),'descricao':(22,1201,533,1153)}
+                          'nome': (267,600,45,77), 'valor': (969,1200,1423,1445),'descricao':(22,1201,533,1153), 'qtdContainer': (10,20,10,20), 'origem': (10,20,10,20), 'emissao': (10,20,10,20)}
+dict_map['DHL']['cotacao'] = {'sellID': (140, 300, 254, 280), 'tmsID': (132, 260, 292, 316),
+                          'nome': (1140, 1510, 105, 165), 'valorAEC': (1180,1300,1560,1583),'valorACC':(1300,1460,1560,1583), 'valorAPB': (1440,1580,1560,1583)}
 
 #MULTITERMINAIS
 dict_map['MULTITERMINAIS'] = {}
@@ -278,13 +286,13 @@ dict_map['SENIOR']['NFS'] = {'CNPJ': (730, 1030, 452, 510), 'con': (2000, 2360, 
 
 dict_map['KN'] = {}
 dict_map['KN']['nota_debito'] = {'con': (10,20,10,20), 'vencimento': (1420, 1590, 326, 360), 'nome': (960, 1580, 2100, 2140),
-                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'qtdContainer': (434, 510, 820, 858), 'origem': (500,800,583,611)}
+                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'container': (515,580, 820, 854), 'qtdContainer': (434, 510, 820, 858), 'tipoContainer': (626, 682, 820, 854), 'origem': (500,800,583,611), 'emissao': (1420, 1590,290,326)}
 dict_map['KUEHNE+NAGEL'] = {}
 dict_map['KUEHNE+NAGEL']['nota_debito'] = {'con': (10,20,10,20), 'vencimento': (1420, 1590, 326, 360), 'nome': (960, 1580, 2100, 2140),
-                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'qtdContainer': (434, 510, 820, 858), 'origem': (500,800,583,611)}
+                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'container': (515,580, 820, 854), 'qtdContainer': (434, 510, 820, 858), 'tipoContainer': (626, 682, 820, 854), 'origem': (500,800,583,611), 'emissao': (1420, 1590,290,326)}
 dict_map['KUEHNE'] = {}
 dict_map['KUEHNE']['nota_debito'] = {'con': (10,20,10,20), 'vencimento': (1420, 1590, 326, 360), 'nome': (960, 1580, 2100, 2140),
-                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'qtdContainer': (434, 510, 820, 858), 'origem': (500,800,583,611)}
+                                 'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'container': (515,580, 820, 854), 'tipoContainer': (626, 682, 820, 854), 'qtdContainer': (434, 510, 820, 858), 'origem': (500,800,583,611), 'emissao': (1420, 1590,290,326)}
 #['con', 'CNPJ' 'vencimento', 'nome', 'qtdContainer', 'valor','origem']
 companies = ['AGV LOGISTICA SA', 
             'RODOLOG TRANSPORTES MULTIMODAIS LTDA', 

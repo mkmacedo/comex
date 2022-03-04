@@ -242,59 +242,6 @@ def extract_data(filename, company, document):
   return info
 
 
-def compare(nota):
-
-  check = False
-
-  temp = {}
-  t = nota['nome'].split()
-  temp[nota['nome']] = ''
-  for e in t:
-    temp[nota['nome']] += e
-  
-  temp['valor'] = ''
-  valor = re.findall(r'[0-9]+|,[0-9][0-9]', str(nota.get('valor')))
-  for e in valor:
-    if e != ',00':
-      temp['valor'] += e
-
-  if re.search(r',[0-9][0-9]', temp['valor']) != None:
-    temp['valor'] = re.sub(',', '.', temp['valor'])
-
-  temp['con'] = re.search(r'[1-9][0-9]+', str(nota.get('con')))
-  if temp['con'] != None:
-    temp['con'] = temp['con'].group()
-  else:
-    temp['con'] = '000'
-
-  api_json = API_Client('https://wise.klink.ai/api/admin/list/planilhavalidacao/'+temp[nota['nome']]+'/'+str(temp['con'])).result
-  
-  if len(api_json) > 0:
-    for i in api_json:
-      if i.get('valorFatura') == temp['valor']:
-        check = True
-        break
-
-  if check == True:
-    nota['planilha'] = 'true'
-    nota['validacao'] = 'true'
-  else:
-    nota['planilha'] = 'false'
-
-  if(check == False):
-    if nota.get("PO") != None:
-      #verifica PO
-      if re.search(r'[0-9]+', nota.get("PO")) == None:
-        nota['validacao'] = 'false'
-      else:
-        nota['validacao'] = 'true'
-    else:
-      nota['validacao'] = 'false'
-  
-  return nota
-
-
-
 def run_ocr(filename, document, company):
   if company != None:
     #api_json = API_Client('https://wise.klink.ai/api/admin/list/planilhavalidacao/AGVLOGISTICA/494112').result
@@ -312,17 +259,18 @@ def run_ocr(filename, document, company):
     if(contaContabil != None):
       dados['conta_contabil'] = contaContabil
 
-    if dados.get('desconto') != None:
-      dados['valorBruto'] = dados['valor'] - dados['desconto']
-    else:
-      dados['valorBruto'] = dados['valor']
+    if dados.get('valor') != None:
+      if dados.get('desconto') != None:
+        dados['valorBruto'] = dados['valor'] - dados['desconto']
+      else:
+        dados['valorBruto'] = dados['valor']
 
     if(dados.get('descricao') != None):
       dados['descricao'] = re.sub('\n', ' ', dados['descricao'])
 
     dados['tipoDocumento'] = document
 
-    res = compare(dados)
+    res = dados
 
   else:
     res = extract_data(filename, None, document)
@@ -412,7 +360,8 @@ def runPipeline(file, docType, companyName):
         except:
           traceback.print_exc()
           print('Unable to read file. \n')
-          return {}#, pageOutputName
+          out = {}
+          return out#, pageOutputName
       finally:
         print('Validando informações extraidas')
         for info in dict_document[docType]:
