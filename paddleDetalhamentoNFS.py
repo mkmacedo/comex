@@ -1,3 +1,4 @@
+from pickle import FALSE
 import cv2
 import re
 from paddleocr import PaddleOCR
@@ -23,6 +24,7 @@ def runPaddleOCR(img_path, lg=None):
     conFlag = False    
     flagNumNota = False
     flagValorTotal = False
+    flagCIF = False
     flagDataEntrada = False
     flagDataSaida = True
     vencFlag = False
@@ -32,6 +34,7 @@ def runPaddleOCR(img_path, lg=None):
     valorTotalCount = 0
     dataEntradaCount = 0
     dataSaidaCount = 0
+    CIF_Count = 0
 
     nameLCS = 0
 
@@ -65,6 +68,7 @@ def runPaddleOCR(img_path, lg=None):
     #result = ocr.ocr(img_path, cls=True)
 
     for line in result:
+        print(line[1][0])
         if flagNumNota == True:
             numNotaCount += 1
 
@@ -155,7 +159,38 @@ def runPaddleOCR(img_path, lg=None):
             valorTotalCount += 1
             if re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])) != None:
                 jsonResult['valor'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
+       
+       
+        #CIF
+        if flagCIF == False:
+            if fuzz.ratio("CIF" , str(line[1][0])) > 80:
+                print("CIF", line[1][0])
+                if jsonResult.get('CIF') != None:
+                    if fuzz.ratio("CIF" , str(line[1][0]))\
+                        > fuzz.ratio("CIF" , jsonResult.get("CIF")):
+                        jsonResult['CIF'] = str(line[1][0])
+                        valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
+                        if valor != None:
+                            jsonResult['CIF'] = valor.group()
+                        elif str(line[1][0]).find('R$') != -1:
+                            jsonResult['CIF'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
+                else:
+                    valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
+                    if valor != None:
+                        jsonResult['CIF'] = valor.group()
+                    elif str(line[1][0]).find('R$') != -1:
+                        jsonResult['CIF'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+
+
+        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'CIF') > 80 or fuzz.partial_ratio(str(line[1][0]).upper(), 'CIF') > 80:
+            flagCIF = True
+            CIF_Count = 0
+
+        if flagCIF == True and CIF_Count < 2 :
+            CIF_Count += 1
+            if re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])) != None:
+                jsonResult['CIF'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
 
         #dataEntrada
         if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
@@ -214,5 +249,5 @@ def runPaddleOCR(img_path, lg=None):
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-res = runPaddleOCR('DETNF500218_0.jpg')
+res = runPaddleOCR('DET NF 500218_page-0001.jpg')
 print(res)

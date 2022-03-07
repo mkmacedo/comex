@@ -16,7 +16,6 @@ from fuzzywuzzy import process
 #po
 #descricao
 
-
 def runPaddleOCR(img_path, lg=None):
     print('\nExecutando OCR paddleNSF \n')
     cnpjFlag = False
@@ -61,6 +60,7 @@ def runPaddleOCR(img_path, lg=None):
     #result = ocr.ocr(img_path, cls=True)
 
     for line in result:
+        print(line[1][0])
         if flagNumNota == True:
             numNotaCount += 1
 
@@ -200,5 +200,5 @@ def runPaddleOCR(img_path, lg=None):
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-#res = runPaddleOCR('LINE_NFS.jpg')
-#print(res)
+res = runPaddleOCR('aéreoNFSDHL.jpg')
+print(res)
