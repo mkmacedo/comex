@@ -2,25 +2,10 @@ from re import M
 from DescricaoNFS import getCleanDescriptionType1
 
 docs_std_resolution = {
-                        'AGV': {'NFS': (2480, 3509), 'recibo_locacao': (2550, 3300), 'mapa_faturamento': (2550, 3300),'custo_frete':(1753,1240),'fatura_duplicata': (989,1280)},
-                        'GKO': {'NFS': (3175, 4150)},
-                        'MOVEIDEIAS': {'NFS': (2480, 3509)},
-                        'RIO': {'NFS': (2480, 3509)},
-                        'RODOLOG': {'NFS': (2483,3512), 'fatura_duplicata': (2480, 3509)},
-                        'RUNTEC': {'NFS': (2480, 3525)},
-                        'SHIFT': {'NFS': (2480, 3509), 'nota_debito': (2481, 3509)},
-                        'DIREMADI': {'NFS': (2480, 3509), 'fatura_duplicata': (1654, 1182)},
-                        'DENISE': {'NFS': (2479, 3509)},
-                        'LINE': {'NFS':(1240,1755), 'fatura_duplicata':(1240,1755),'custo_frete':(1753,1240)},
-                        #'ANDREANI':{'fatura_duplicata':(1240,1755), 'custo_frete':(1753,1240)},
-                        'ANDREANI':{'fatura_duplicata':(1653,2339), 'custo_frete':(1753,1240)},
-                        'FL':{'DACTE':(1240,1753), 'custo_frete':(1753,1240),'fatura_frete':(1241,1755)},
-                        None:{'fatura_frete': (1241,1755)},
                         'MULTIRIO':{'NFS':(1240,1755),'boleto':(1240,1755)},
                         'ICTSI':{'NFS':(1240,1755),'boleto':(1240,1755), 'detalhamento_notafiscal': (1653,2339)},
                         'DHL':{'nota_debito':(1240,1755),'NFS':(1240,1755), 'cotacao': (1653, 2339)},
                         'MULTITERMINAIS':{'minuta_calculo':(1275,1650),'boleto':(1240,1755)},
-                        'SENIOR': {'NFS': (2480, 3525)},
                         'KN': {'nota_debito': (1654, 2339)},
                         'KUEHNE+NAGEL': {'nota_debito': (1654, 2339)}
                        }
@@ -40,12 +25,7 @@ dict_document = {
                 'cotacao': ['sellID', 'tmsID', 'valorAEC', 'valorACC', 'valorAPB', 'nome']
                  }
 
-docTypeMap = {'mapa de faturamento': 'mapa_faturamento',
-                'mapa faturamento': 'mapa_faturamento',
-                'recibo locação': 'recibo_locacao',
-                'recibo locacao': 'recibo_locacao',
-                'recibo de locação': 'recibo_locacao',
-                'recibo de locacao': 'recibo_locacao',
+docTypeMap = {
                 'nota fiscal de serviço': 'NFS',
                 'nfs-e': 'NFS',
                 'nfs': 'NFS',
@@ -56,13 +36,10 @@ docTypeMap = {'mapa de faturamento': 'mapa_faturamento',
                 'duplicata': 'fatura_duplicata',
                 'frete cif': 'fatura_duplicata',
                 'nota fiscal': 'NFS',
-                'custo de frete': 'custo_frete',
-                'custo frete': 'custo_frete',
                 'nota de debito': 'nota_debito',
                 'nota de débito': 'nota_debito',
                 'nota débito': 'nota_debito',
                 'nota debito': 'nota_debito',
-                'dacte': 'DACTE',
                 'conferencia de faturas': 'fatura_frete',
                 'detalhamento dos itens da nota fiscal': 'detalhamento_notafiscal',
                 'minuta de calculo':'minuta_calculo',
@@ -75,15 +52,10 @@ docTypeMap = {'mapa de faturamento': 'mapa_faturamento',
 
 docHierarchy = {
                 'cotacao': 12,
-                'boleto': 11,
+                'boleto': 11, #falta identificar
                 'minuta_calculo': 10,
                 'detalhamento_notafiscal': 9,
-                'fatura_frete': 8,
                 'nota_debito': 7,
-                'DACTE': 6,
-                'recibo_locacao': 5,
-                'mapa_faturamento': 4,
-                'custo_frete': 3,
                 'fatura_duplicata': 2,
                 'NFS': 1
                 }
@@ -294,86 +266,35 @@ dict_map['KUEHNE'] = {}
 dict_map['KUEHNE']['nota_debito'] = {'con': (10,20,10,20), 'vencimento': (1420, 1590, 326, 360), 'nome': (960, 1580, 2100, 2140),
                                  'valor': (1316,1590, 1770, 1900), 'CNPJ': (125, 370, 2108, 2131), 'container': (515,580, 820, 854), 'tipoContainer': (626, 682, 820, 854), 'qtdContainer': (434, 510, 820, 858), 'origem': (500,800,583,611), 'emissao': (1420, 1590,290,326)}
 #['con', 'CNPJ' 'vencimento', 'nome', 'qtdContainer', 'valor','origem']
-companies = ['AGV LOGISTICA SA', 
-            'RODOLOG TRANSPORTES MULTIMODAIS LTDA', 
-            'DIREMADI MARKETING E SERVICOS LTDA', 
-            'SHIFT GESTAO DE SERVICOS LTDA', 
-            'RUNTEC INFOMATICA LTDA', 
-            'DENISE DOS ANJOS PINTO LUCENA',
-            'GKO INFORMATICA LTDA',
-            'MOVEIDEIAS CONSULTORIA E INTEGRACAO DE NEGOCIOS LTDA',
-            'RIO LOPES TRANSPORTES LTDA',
-            'LINE EXPRESS TRANSPORTES E DISTRIBUICAO LTDA',
-            'ANDREANI LOGISTICA LTDA',
-            'FL BRASIL HOLDING LOGISTICA E TRANSPORTE LTDA',
+companies = [
             'MULTI RIO OPERACOES PORTUARIAS S/A',
             'ICTSI RIO BRASIL TERMINAL 1 SA',
             'DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA',
             'MULTITERMINAIS LOGISTICA INTEGRADA',
-            'SENIOR SISTEMAS',
             'KUEHNE+NAGEL',
             'KUEHNE'
             ]
 
 listaCNPJ = [
-            '05.214.772/0001-40', # - rodolog ok
-            '02.905.424/0066-76', # - agv ko
-            '21.026.581/0001-00', # - moveideias
-            '29.519.838/0001-14', # - rio
-            '04.134.548/0001-85', # - runtec
-            '24.936.646/0001-43', # - Denise
-            '08.709.969/0001-48', # - Shift
-            '31.334.600/0001-10', # - GKO
-            '35.905.090/0001-44', # - Diremadi
-            '18.233.211/0015-35', # - FL
-            '04.887.927/0015-41', # - Andreani
-            '07.117.576/0001-82', # - Line
             '02.887.283/0002-60', #MULTIRIO
             '10.228.777/0008-38', #DHL
             '02.373.517/0001-51', #ICTSI
-            '80.680.093/0030-16', #SENIOR
             '02.886.427/0001-64' #KN
             ]
 
 mapNameCNPJ = {
-            '05.214.772/0001-40': 'RODOLOG TRANSPORTES MULTIMODAIS LTDA',
-            '02.905.424/0066-76': 'AGV LOGISTICA SA',
-            '21.026.581/0001-00': 'MOVEIDEIAS CONSULTORIA E INTEGRACAO DE NEGOCIOS LTDA',
-            '29.519.838/0001-14': 'RIO LOPES TRANSPORTES LTDA',
-            '04.134.548/0001-85': 'RUNTEC INFOMATICA LTDA',
-            '24.936.646/0001-43': 'DENISE DOS ANJOS PINTO LUCENA',
-            '08.709.969/0001-48': 'SHIFT GESTAO DE SERVICOS LTDA',
-            '31.334.600/0001-10': 'GKO INFORMATICA LTDA',
-            '35.905.090/0001-44': 'DIREMADI MARKETING E SERVICOS LTDA',
-            '18.233.211/0015-35': 'FL BRASIL HOLDING LOGISTICA E TRANSPORTE LTDA',
-            '04.887.927/0015-41': 'ANDREANI LOGISTICA LTDA',
             '07.117.576/0001-82': 'LINE EXPRESS TRANSPORTES E DISTRIBUICAO LTDA',
             '02.887.283/0002-60': 'MULTI RIO OPERACOES PORTUARIAS S/A',
             '10.228.777/0008-38': 'DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA',
             '02.373.517/0001-51': 'ICTSI RIO BRASIL TERMINAL 1 SA',
-            '80.680.093/0030-16': 'SENIOR SISTEMAS',
             '02.886.427/0001-64': 'KUEHNE+NAGEL'
             }
 
-mapLongShort = {'AGV': 'AGV LOGISTICA SA', 
-                'RODOLOG': 'RODOLOG TRANSPORTES MULTIMODAIS LTDA', 
-                'DIREMADI': 'DIREMADI MARKETING E SERVICOS LTDA', 
-                'SHIFT': 'SHIFT GESTAO DE SERVICOS LTDA', 
-                'RUNTEC': 'RUNTEC INFOMATICA LTDA', 
-                'DENISE': 'DENISE DOS ANJOS PINTO LUCENA',
-                'GKO': 'GKO INFORMATICA LTDA',
-                'MOVEIDEIAS': 'MOVEIDEIAS CONSULTORIA E INTEGRACAO DE NEGOCIOS LTDA',
-                'RIO': 'RIO LOPES TRANSPORTES LTDA',
-                'LINE': 'LINE EXPRESS TRANSPORTES E DISTRIBUICAO LTDA',
-                'LINEX': 'LINE EXPRESS TRANSPORTES E DISTRIBUICAO LTDA',
-                'ANDREANI': 'ANDREANI LOGISTICA LTDA',
-                'FL': 'FL BRASIL HOLDING LOGISTICA E TRANSPORTE LTDA',
-                'FLBRASIL': 'FL BRASIL HOLDING LOGISTICA E TRANSPORTE LTDA',
+mapLongShort = {
                 'MULTI': 'MULTI RIO OPERACOES PORTUARIAS S/A',
                 'ICTSI': 'ICTSI RIO BRASIL TERMINAL 1 SA',
                 'DHL': 'DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA',
                 'MULTITERMINAIS': 'MULTITERMINAIS LOGISTICA INTEGRADA',
-                'SENIOR': 'SENIOR SISTEMAS',
                 'KN': 'KUEHNE+NAGEL',
                 'KUEHNE+NAGEL': 'KUEHNE+NAGEL',
                 'KUEHNE':'KUEHNE+NAGEL'
@@ -387,8 +308,8 @@ field_validation = {
                     'CNPJ': r'[0-9][0-9]\.[0-9][0-9][0-9]\.[0-9][0-9][0-9]/[0-9][0-9][0-9][0-9]-[0-9][0-9]',
                     'PO': r'[0-9][0-9]+',
                     'CNTR': r'[0-9][0-9]',
-                    'dataEntrada': r'[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]',
-                    'dataSaida': r'[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]'
+                    'dataEntrada': r'(?:[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9])',
+                    'dataSaida': r'(?:[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9])'
                     }
 
 manyPagesDocList = ['custo_frete', 'fatura_frete', 'fatura_duplicata', None]

@@ -10,7 +10,7 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 #con
-#vencimento
+#dataEntrada
 #nome
 #valor
 #po
@@ -23,22 +23,26 @@ def runPaddleOCR(img_path, lg=None):
     conFlag = False    
     flagNumNota = False
     flagValorTotal = False
-    flagVencimento = False
+    flagDataEntrada = False
+    flagDataSaida = True
     vencFlag = False
     flagNameFromCNPJ = False
 
     numNotaCount = 0
     valorTotalCount = 0
-    vencimentoCount = 0
+    dataEntradaCount = 0
+    dataSaidaCount = 0
 
     nameLCS = 0
 
-    tempVencimento = ''
+    tempdataEntrada = ''
+    tempdataSaida = ''
 
-    poChoices = ['PO', 'NUMERO PEDIDO', 'NRO PEDIDO', 'ORDEM COMPRA']
+
     conChoices = ['NRO NOTA', 'NRO DA NOTA', 'NUMERO NOTA', 'NUMERO DA NOTA', 'NÚMERO NOTA', 'NÚMERO DA NOTA']
-    vencimentoChoices = ['DATA', 'VENCIMENTO', 'DATA VENCIMENTO']
-    valorChoices = ['VALOR NOTA', 'VALOR DA NOTA', 'VALOR TOTAL']
+    dataEntradaChoices = ['ENTRADA', 'DATA DE ENTRADA']
+    dataSaidaChoices = ['DT HR ATRACACAO NAVIO', 'ATRACACAO NAVIO', 'DT HR ATRACACAO']
+    valorChoices = ['VALOR TOTAL', 'TOTAL']
 
     jsonResult = {}
 
@@ -121,22 +125,6 @@ def runPaddleOCR(img_path, lg=None):
                         break
 
 
-        #PO
-        if process.extractOne(str(line[1][0]).upper(), poChoices, scorer=fuzz.token_set_ratio)[1] > 80:
-            if jsonResult.get('PO') != None:
-                if process.extractOne(str(line[1][0]).upper(), poChoices, scorer=fuzz.token_set_ratio) > process.extractOne(str(jsonResult.get('PO')).upper(), poChoices, scorer=fuzz.token_set_ratio):
-                    jsonResult['PO'] = str(line[1][0])
-                    po = re.search(r'[0-9]+', line[1][0])
-                    if po != None:
-                        jsonResult['PO'] = po.group()
-
-                    
-            else:
-                jsonResult['PO'] = str(line[1][0])
-                po = re.search(r'[0-9]+', str(line[1][0]))
-                if po != None:
-                    jsonResult['PO'] = po.group()
-
 
         #VALOR
         if flagValorTotal == False:
@@ -169,36 +157,62 @@ def runPaddleOCR(img_path, lg=None):
                 jsonResult['valor'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
 
 
-        #Vencimento
-        if process.extractOne(str(line[1][0]).upper(), vencimentoChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
-            flagVencimento = True
-            if jsonResult.get('vencimento') != None:
-                if process.extractOne(str(line[1][0]).upper(), vencimentoChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempVencimento.upper(), vencimentoChoices, scorer=fuzz.ratio)[1] \
+        #dataEntrada
+        if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
+            flagDataSaida = True
+            if jsonResult.get('dataEntrada') != None:
+                if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempDataSaida.upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] \
                     and re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0])) != None:
-                    tempVencimento = str(line[1][0])
-                    jsonResult['vencimento'] = str(line[1][0])
-                    vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
-                    if vencimento != None:
-                        jsonResult['vencimento'] = vencimento.group()
+                    tempdataEntrada = str(line[1][0])
+                    jsonResult['dataEntrada'] = str(line[1][0])
+                    dataEntrada = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
+                    if dataEntrada != None:
+                        jsonResult['dataEntrada'] = dataEntrada.group()
             else:
-                jsonResult['vencimento'] = str(line[1][0])
-                vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', line[1][0])
-                if vencimento != None:
-                    jsonResult['vencimento'] = vencimento.group()
+                jsonResult['dataEntrada'] = str(line[1][0])
+                dataEntrada = re.search(r'[0-9]+/[0-9]+/[0-9]+', line[1][0])
+                if dataEntrada != None:
+                    jsonResult['dataEntrada'] = dataEntrada.group()
 
-        if flagVencimento == True and vencFlag == False:
-            vencimentoCount += 1
-            if vencimentoCount <= 5:
-                vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
-                if vencimento != None:
-                    jsonResult['vencimento'] = vencimento.group()
+        if flagDataEntrada == True and vencFlag == False:
+            dataEntradaCount += 1
+            if dataEntradaCount <= 5:
+                dataEntrada = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
+                if dataEntrada != None:
+                    jsonResult['dataEntrada'] = dataEntrada.group()
             else:
                 vencFlag = True
         
+
+        #dataSaida
+        if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
+            flagDataSaida = True
+            if jsonResult.get('dataSaida') != None:
+                if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempDataSaida.upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] \
+                    and re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0])) != None:
+                    tempDataSaida = str(line[1][0])
+                    jsonResult['dataSaida'] = str(line[1][0])
+                    dataSaida = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
+                    if dataSaida != None:
+                        jsonResult['dataSaida'] = dataSaida.group()
+            else:
+                jsonResult['dataSaida'] = str(line[1][0])
+                dataSaida = re.search(r'[0-9]+/[0-9]+/[0-9]+', line[1][0])
+                if dataSaida != None:
+                    jsonResult['dataSaida'] = dataSaida.group()
+
+        if flagDataSaida == True and vencFlag == False:
+            dataSaidaCount += 1
+            if dataSaidaCount <= 5:
+                dataSaida = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
+                if dataSaida != None:
+                    jsonResult['dataEntrada'] = dataSaida.group()
+            else:
+                vencFlag = True
     print('end of for loop \n')
 
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-#res = runPaddleOCR('DET NF 500218.pdf')
-#print(res)
+res = runPaddleOCR('DETNF500218_0.jpg')
+print(res)
