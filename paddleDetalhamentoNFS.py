@@ -26,8 +26,9 @@ def runPaddleOCR(img_path, lg=None):
     flagValorTotal = False
     flagCIF = False
     flagDataEntrada = False
-    flagDataSaida = True
-    vencFlag = False
+    flagDataSaida = False
+    saidaFlag = False
+    entrFlag = False
     flagNameFromCNPJ = False
 
     numNotaCount = 0
@@ -38,12 +39,12 @@ def runPaddleOCR(img_path, lg=None):
 
     nameLCS = 0
 
-    tempdataEntrada = ''
-    tempdataSaida = ''
+    tempDataEntrada = ''
+    tempDdataSaida = ''
 
 
     conChoices = ['NRO NOTA', 'NRO DA NOTA', 'NUMERO NOTA', 'NUMERO DA NOTA', 'NÚMERO NOTA', 'NÚMERO DA NOTA']
-    dataEntradaChoices = ['ENTRADA', 'DATA DE ENTRADA']
+    dataEntradaChoices = ['ENTRADA', 'DATA DE ENTRADA', 'ENTRADA']
     dataSaidaChoices = ['DT HR ATRACACAO NAVIO', 'ATRACACAO NAVIO', 'DT HR ATRACACAO']
     valorChoices = ['VALOR TOTAL', 'TOTAL']
 
@@ -193,12 +194,12 @@ def runPaddleOCR(img_path, lg=None):
                 jsonResult['CIF'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
 
         #dataEntrada
-        if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
-            flagDataSaida = True
+        if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] > 85 and entrFlag == False:
+            flagDataEntrada = True
             if jsonResult.get('dataEntrada') != None:
-                if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempDataSaida.upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] \
+                if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempDataEntrada.upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] \
                     and re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0])) != None:
-                    tempdataEntrada = str(line[1][0])
+                    tempDataEntrada = str(line[1][0])
                     jsonResult['dataEntrada'] = str(line[1][0])
                     dataEntrada = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
                     if dataEntrada != None:
@@ -209,18 +210,18 @@ def runPaddleOCR(img_path, lg=None):
                 if dataEntrada != None:
                     jsonResult['dataEntrada'] = dataEntrada.group()
 
-        if flagDataEntrada == True and vencFlag == False:
+        if flagDataEntrada == True and entrFlag == False:
             dataEntradaCount += 1
-            if dataEntradaCount <= 5:
+            if dataEntradaCount <= 2:
                 dataEntrada = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
                 if dataEntrada != None:
                     jsonResult['dataEntrada'] = dataEntrada.group()
             else:
-                vencFlag = True
+                entrFlag = True
         
 
         #dataSaida
-        if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.partial_ratio)[1] > 85 and vencFlag == False:
+        if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.partial_ratio)[1] > 85 and saidaFlag == False:
             flagDataSaida = True
             if jsonResult.get('dataSaida') != None:
                 if process.extractOne(str(line[1][0]).upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] > process.extractOne(tempDataSaida.upper(), dataSaidaChoices, scorer=fuzz.ratio)[1] \
@@ -236,18 +237,18 @@ def runPaddleOCR(img_path, lg=None):
                 if dataSaida != None:
                     jsonResult['dataSaida'] = dataSaida.group()
 
-        if flagDataSaida == True and vencFlag == False:
+        if flagDataSaida == True and saidaFlag == False:
             dataSaidaCount += 1
             if dataSaidaCount <= 5:
                 dataSaida = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
                 if dataSaida != None:
-                    jsonResult['dataEntrada'] = dataSaida.group()
+                    jsonResult['dataSaida'] = dataSaida.group()
             else:
-                vencFlag = True
+                saidaFlag = True
     print('end of for loop \n')
 
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-res = runPaddleOCR('DET NF 500218_page-0001.jpg')
+res = runPaddleOCR('DETNF500218_0.jpg')
 print(res)
