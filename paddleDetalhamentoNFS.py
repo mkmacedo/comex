@@ -97,7 +97,24 @@ def runPaddleOCR(img_path, lg=None):
                     jsonResult['con'] = con.group()#str(line[1][0])[str(line[1][0]).find(':')+1:].strip()
                     conFlag = True
 
-        
+        #DI
+        if fuzz.ratio("DI", str(line[1][0]).upper()) > 80 or fuzz.token_set_ratio("DI", str(line[1][0]).upper()) > 95 or re.search(r"DI ?[0-9]+", str(line[1][0])) != None:
+            print("DI", str(line[1][0]))
+            if jsonResult.get('DI') != None:
+                if fuzz.ratio("DI", str(line[1][0]).upper()) > fuzz.ratio("DI", str(jsonResult.get("DI"))) :
+                    jsonResult['DI'] = str(line[1][0])
+                    di = re.search(r'[0-9]+', line[1][0])
+                    if di != None:
+                        jsonResult['DI'] = di.group()
+
+                    
+            else:
+                jsonResult['DI'] = str(line[1][0])
+                di = re.search(r'[0-9]+', str(line[1][0]))
+                if di != None:
+                    jsonResult['DI'] = di.group()
+
+
         #Razao Social
         if flagNameFromCNPJ == False:
             for company in companies:
