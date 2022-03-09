@@ -30,7 +30,7 @@ def runPaddleOCR(img_path, lg=None):
 
     nameLCS = 0
 
-    valorChoices = ['VALOR NOTA', 'VALOR DA NOTA', 'VALOR TOTAL']
+    valorChoices = ['VALOR TOTAL']
     cifChoices = ['VALOR CIF']
 
     jsonResult = {}
@@ -51,8 +51,13 @@ def runPaddleOCR(img_path, lg=None):
     #ocr = PaddleOCR(use_angle_cls=True, lang='en')
 
     #result = ocr.ocr(img_path, cls=True)
+    listaPeriodos = []
 
     for line in result:
+        print(line[1][0])
+        if re.search(r"de ?[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9] ?a ?[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]", line[1][0]) != None:
+            periodo = re.search(r"de ?[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9] ?a ?[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]", line[1][0]).group()
+            listaPeriodos.append(periodo)
 
         if flagNumNota == True:
             numNotaCount += 1
@@ -70,10 +75,10 @@ def runPaddleOCR(img_path, lg=None):
 
         #VALOR
         if flagValorTotal == False:
-            if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.partial_ratio)[1] > 80:
+            if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.token_set_ratio)[1] > 80:
                 if jsonResult.get('valor') != None:
-                    if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.partial_ratio)[1] \
-                        > process.extractOne(str(jsonResult.get('valor')).upper(), valorChoices, scorer=fuzz.partial_ratio)[1]:
+                    if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.token_set_ratio)[1] \
+                        > process.extractOne(str(jsonResult.get('valor')).upper(), valorChoices, scorer=fuzz.token_set_ratio)[1]:
                         jsonResult['valor'] = str(line[1][0])
                         valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
                         if valor != None:
@@ -89,8 +94,9 @@ def runPaddleOCR(img_path, lg=None):
                         jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
 
-        if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.partial_ratio)[1] > 95:
+        if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.token_set_ratio)[1] > 95:
             flagValorTotal = True
+            valorTotalCount = 0
 
         if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VALOR TOTAL') > 80:
             flagValorTotal = True
@@ -107,45 +113,71 @@ def runPaddleOCR(img_path, lg=None):
         #CIF
         if flagCIF == False:
             if process.extractOne(str(line[1][0]).upper(), cifChoices, scorer=fuzz.partial_ratio)[1] > 80:
-                if jsonResult.get('valor') != None:
+                if jsonResult.get('CIF') != None:
                     if process.extractOne(str(line[1][0]).upper(), cifChoices, scorer=fuzz.partial_ratio)[1] \
-                        > process.extractOne(str(jsonResult.get('valor')).upper(), cifChoices, scorer=fuzz.partial_ratio)[1]:
-                        jsonResult['valor'] = str(line[1][0])
+                        > process.extractOne(str(jsonResult.get('CIF')).upper(), cifChoices, scorer=fuzz.partial_ratio)[1]:
+                        jsonResult['CIF'] = str(line[1][0])
                         valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
                         if valor != None:
-                            jsonResult['valor'] = valor.group()
+                            jsonResult['CIF'] = valor.group()
                         elif str(line[1][0]).find('R$') != -1:
-                            jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+                            jsonResult['CIF'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
                 else:
                     valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
                     if valor != None:
-                        jsonResult['valor'] = valor.group()
+                        jsonResult['CIF'] = valor.group()
                     elif str(line[1][0]).find('R$') != -1:
-                        jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+                        jsonResult['CIF'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
 
         if process.extractOne(str(line[1][0]).upper(), cifChoices, scorer=fuzz.partial_ratio)[1] > 95:
             flagCIF = True
 
-        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VALOR TOTAL') > 80:
+        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VALOR CIF') > 80:
             flagCIF = True
 
         if flagCIF == True and cifCount <= 5:
             cifCount += 1
             if str(line[1][0]).find('R$') != -1:
-                jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+                jsonResult['CIF'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
             elif re.search(r'[0-9]+(?:\.[0-9]+)?,[0-9][0-9]', str(line[1][0])) != None:
-                jsonResult['valor'] = re.search(r'(?:R$ ?)?[0-9]+(?:\.[0-9]+)?,[0-9][0-9]', str(line[1][0])).group()
+                jsonResult['CIF'] = re.search(r'(?:R$ ?)?[0-9]+(?:\.[0-9]+)?,[0-9][0-9]', str(line[1][0])).group()
 
         if fuzz.token_set_ratio(str(line[1][0]).upper(), 'CNTR') > 60:
             jsonResult['CNTR'] = str(line[1][0])
 
+        #DI
+        if fuzz.ratio("DI", str(line[1][0]).upper()) > 80 or fuzz.token_set_ratio("DI", str(line[1][0]).upper()) > 95 or re.search(r"DI ?[0-9]+", str(line[1][0])) != None:
+            print("DI", str(line[1][0]))
+            if jsonResult.get('DI') != None:
+                if fuzz.ratio("DI", str(line[1][0]).upper()) > fuzz.ratio("DI", str(jsonResult.get("DI"))) :
+                    jsonResult['DI'] = str(line[1][0])
+                    di = re.search(r'[0-9]+', line[1][0])
+                    if di != None:
+                        jsonResult['DI'] = di.group()
+
+                    
+            else:
+                jsonResult['DI'] = str(line[1][0])
+                di = re.search(r'[0-9]+', str(line[1][0]))
+                if di != None:
+                    jsonResult['DI'] = di.group()
+
+
+
     print('end of for loop')
+
+    if len(listaPeriodos) > 0:
+        listaDatas = re.findall(r"[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]", listaPeriodos[-1])
+        if len(listaDatas) > 0:
+            jsonResult["dataEntrada"] = listaDatas[0]
+            jsonResult["dataSaida"] = listaDatas[-1]
+
 
     print(f'Output paddleMinutaCalculo (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-#res = runPaddleOCR('LINE_NFS.jpg')
-#print(res)
+res = runPaddleOCR('Minuta DI 211911396-2_page-0001 (1)(1).jpg', 'en')
+print(res)
