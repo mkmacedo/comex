@@ -19,12 +19,13 @@ from fuzzywuzzy import process
 
 
 def runPaddleOCR(img_path, lg=None):
-    print('\nExecutando OCR paddleNSF \n')
+    print('\nExecutando OCR paddleDetalhamentoNSF \n')
     cnpjFlag = False
     conFlag = False    
     flagNumNota = False
     flagValorTotal = False
     flagCIF = False
+    flagTaxa = False
     flagDataEntrada = False
     flagDataSaida = False
     saidaFlag = False
@@ -36,11 +37,12 @@ def runPaddleOCR(img_path, lg=None):
     dataEntradaCount = 0
     dataSaidaCount = 0
     CIF_Count = 0
+    taxaCount = 0
 
     nameLCS = 0
 
     tempDataEntrada = ''
-    tempDdataSaida = ''
+    tempDataSaida = ''
 
 
     conChoices = ['NRO NOTA', 'NRO DA NOTA', 'NUMERO NOTA', 'NUMERO DA NOTA', 'NÚMERO NOTA', 'NÚMERO DA NOTA']
@@ -169,7 +171,7 @@ def runPaddleOCR(img_path, lg=None):
                         jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
 
-        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VALOR TOTAL') > 80 or fuzz.partial_ratio(str(line[1][0]).upper(), 'VALOR TOTAL') > 80:
+        if fuzz.ratio(str(line[1][0]).upper(), 'TOTAL') > 80 or fuzz.token_set_ratio(str(line[1][0]).upper(), 'TOTAL') > 90:
             flagValorTotal = True
             valorTotalCount = 0
 
@@ -179,9 +181,41 @@ def runPaddleOCR(img_path, lg=None):
                 jsonResult['valor'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
        
        
+        #Taxa
+        if flagTaxa == False:
+            if fuzz.ratio("TAXA", str(line[1][0])) > 80:
+                print("TAXA", line[1][0])
+                if jsonResult.get('TAXA') != None:
+                    if fuzz.ratio("TAXA", str(line[1][0]))\
+                        > fuzz.ratio("TAXA" , jsonResult.get("TAXA")):
+                        jsonResult['TAXA'] = str(line[1][0])
+                        valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
+                        if valor != None:
+                            jsonResult['TAXA'] = valor.group()
+                        elif str(line[1][0]).find('R$') != -1:
+                            jsonResult['TAXA'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+
+                else:
+                    valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', str(line[1][0]))
+                    if valor != None:
+                        jsonResult['TAXA'] = valor.group()
+                    elif str(line[1][0]).find('R$') != -1:
+                        jsonResult['TAXA'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
+
+
+        if fuzz.ratio(str(line[1][0]).upper(), 'TAXA') > 80 or fuzz.token_set_ratio(str(line[1][0]).upper(), 'TAXA') > 90:
+            flagTaxa = True
+            taxaCount = 0
+
+        if flagTaxa == True and taxaCount < 5:
+            taxaCount += 1
+            if re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])) != None:
+                jsonResult['TAXA'] = re.search(r'[0-9]+(?:\.[0-9]+)?', str(line[1][0])).group()
+
+
         #CIF
         if flagCIF == False:
-            if fuzz.ratio("CIF" , str(line[1][0])) > 80:
+            if fuzz.ratio("CIF" , str(line[1][0]).upper()) > 80:
                 print("CIF", line[1][0])
                 if jsonResult.get('CIF') != None:
                     if fuzz.ratio("CIF" , str(line[1][0]))\
@@ -209,6 +243,7 @@ def runPaddleOCR(img_path, lg=None):
             CIF_Count += 1
             if re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])) != None:
                 jsonResult['CIF'] = re.search(r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?', str(line[1][0])).group()
+
 
         #dataEntrada
         if process.extractOne(str(line[1][0]).upper(), dataEntradaChoices, scorer=fuzz.ratio)[1] > 85 and entrFlag == False:
@@ -267,5 +302,6 @@ def runPaddleOCR(img_path, lg=None):
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-res = runPaddleOCR('DETNF500218_0.jpg')
+#res = runPaddleOCR('DETNF500218_0.jpg')
+res = runPaddleOCR('DETNF500218_1.jpg')
 print(res)
