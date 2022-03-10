@@ -6,7 +6,7 @@ from LCS import lcs
 import paddleNFS
 import paddleReciboLocacao
 import paddleFaturaDuplicata
-import paddleNotaDebitoShift
+import paddleNotaDebito
 import paddleMinutaCalculo
 import paddleCustoFrete
 import paddleFaturaFrete
@@ -42,7 +42,7 @@ def runPaddleOCR(img_path, docType=None):
                 'mapa_faturamento': lambda : paddleNFS.runPaddleOCR(img_path, 'en'),
                 'recibo_locacao': lambda : paddleReciboLocacao.runPaddleOCR(img_path),
                 'fatura_duplicata': lambda : paddleFaturaDuplicata.runPaddleOCR(img_path),
-                'nota_debito': lambda : paddleNotaDebitoShift.runPaddleOCR(img_path),
+                'nota_debito': lambda : paddleNotaDebito.runPaddleOCR(img_path),
                 'minuta_calculo': lambda : paddleMinutaCalculo.runPaddleOCR(img_path),
                 'custo_frete': lambda : paddleCustoFrete.runPaddleOCR(img_path)
                 }
@@ -64,9 +64,9 @@ def runPaddleOCR(img_path, docType=None):
                                     lambda : paddleFaturaDuplicata.runPaddleOCR(img_path, 'en'),
                                     lambda : paddleFaturaDuplicata.runPaddleOCR(img_path, 'latin'),
                                     lambda : tesseractFaturaDuplicata.runTesseractOCR(img_path)],
-                'nota_debito': [lambda : paddleNotaDebitoShift.runPaddleOCR(img_path),
-                                lambda : paddleNotaDebitoShift.runPaddleOCR(img_path, 'en'),
-                                lambda : paddleNotaDebitoShift.runPaddleOCR(img_path, 'latin'),
+                'nota_debito': [lambda : paddleNotaDebito.runPaddleOCR(img_path),
+                                lambda : paddleNotaDebito.runPaddleOCR(img_path, 'en'),
+                                lambda : paddleNotaDebito.runPaddleOCR(img_path, 'latin'),
                                 lambda : tesseractNotaDebito.runTesseractOCR(img_path)],
                 'minuta_calculo': [lambda : paddleMinutaCalculo.runPaddleOCR(img_path),
                                     lambda : paddleMinutaCalculo.runPaddleOCR(img_path, 'en'),

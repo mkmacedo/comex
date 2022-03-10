@@ -10,6 +10,11 @@ from fuzzywuzzy import fuzz
 
 def runPaddleOCR(img_path, lg=None):
 
+    vencAvg_x = 0
+    vencAvg_y = 0
+    currentVectorDifference = -1
+
+
     jsonResult = {}
 
     cnpjFlag = False
@@ -32,6 +37,7 @@ def runPaddleOCR(img_path, lg=None):
     #save_structure_res(result, save_folder,os.path.basename(img_path).split('.')[0])
 
     for line in result:
+        print(line)
         i = 0
         #con
         if i < 5:
@@ -108,7 +114,7 @@ def runPaddleOCR(img_path, lg=None):
 
 
         #Vencimento
-        if fuzz.token_set_ratio(str(line[1][0]), 'Vencimento') > 80 or flagVencimento == True:
+        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VENCIMENTO') > 80 or flagVencimento == True:
             flagVencimento = True
             if jsonResult.get('vencimento') != None:
                 if fuzz.token_set_ratio(str(line[1][0]), 'Vencimento') > fuzz.token_set_ratio(jsonResult.get('vencimento'), 'Vencimento'):
@@ -116,11 +122,49 @@ def runPaddleOCR(img_path, lg=None):
                     vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', line[1][0])
                     if vencimento != None:
                         jsonResult['vencimento'] = vencimento.group()
+
             else:
                 #jsonResult['vencimento'] = str(line[1][0])
                 vencimento = re.search(r'[0-9]+/[0-9]+/[0-9]+', line[1][0])
                 if vencimento != None:
                     jsonResult['vencimento'] = vencimento.group()
+
+
+        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'VENCIMENTO') > 80:
+            vencCoordArr = line[0]
+            sum_x = 0
+            sum_y = 0
+
+            for c in vencCoordArr:
+                sum_x += c[0]
+                sum_y += c[1]
+
+            vencAvg_x = sum_x/4
+            vencAvg_y = sum_y/4
+
+        dataVenc = re.search(r'[0-9]+/[0-9]+/[0-9]+', str(line[1][0]))
+        if dataVenc != None:
+            dataVencCoordArr = line[0]
+            data_x_sum = 0
+            data_y_sum = 0
+
+            for c in dataVencCoordArr:
+                data_x_sum += c[0]
+                data_y_sum += c[1]
+
+            dataAvg_x = data_x_sum/4
+            dataAvg_y = data_y_sum/4
+
+            xDiff = dataAvg_x - vencAvg_x
+            yDiff = dataAvg_y - vencAvg_y
+
+            absolute_diff = (xDiff**2 + yDiff**2)**(1/2)
+            print(dataVenc.group())
+            if absolute_diff < currentVectorDifference or currentVectorDifference == -1:
+                currentVectorDifference = absolute_diff
+                jsonResult['vencimento'] = dataVenc.group()
+                
+
 
 
         #nome
@@ -161,5 +205,5 @@ def runPaddleOCR(img_path, lg=None):
     return jsonResult
 
 
-#res = runPaddleOCR('page0.jpg')
-#print(res)
+res = runPaddleOCR('NF-Debito_10228777000838_56658_0.jpg')
+print(res)
