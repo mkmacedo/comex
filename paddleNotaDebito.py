@@ -5,10 +5,12 @@ from dictionaries import companies, listaCNPJ
 
 from PIL import Image
 from fuzzywuzzy import fuzz
-#from fuzzywuzzy import process
+from fuzzywuzzy import process
 
 
 def runPaddleOCR(img_path, lg=None):
+
+    valorChoices = ['TOTAL RS', 'TOTAL LIQUIDO']
 
     vencAvg_x = 0
     vencAvg_y = 0
@@ -38,6 +40,8 @@ def runPaddleOCR(img_path, lg=None):
     print(f'Inicio {img_path} ')
     result = ocr.ocr(img_path, cls=True)
     #save_structure_res(result, save_folder,os.path.basename(img_path).split('.')[0])
+
+    debug_arr = []
 
     for line in result:
         print(line)
@@ -103,7 +107,7 @@ def runPaddleOCR(img_path, lg=None):
 
         
         #VALOR
-        if fuzz.token_set_ratio(str(line[1][0]), 'VALOR') > 60:
+        if fuzz.token_set_ratio(str(line[1][0]), 'VALOR') > 80:
             if jsonResult.get('valor') != None:
                 if fuzz.token_set_ratio(str(line[1][0]), 'VALOR') > fuzz.token_set_ratio(jsonResult.get('valor'), 'VALOR'):
                     jsonResult['valor'] = str(line[1][0])
@@ -115,7 +119,9 @@ def runPaddleOCR(img_path, lg=None):
                         jsonResult['valor'] = str(line[1][0])[str(line[1][0]).find('R$'):].strip()
 
 
-        if fuzz.token_set_ratio(str(line[1][0]).upper(), 'TOTAL') > 80:
+        if process.extractOne(str(line[1][0]).upper(), valorChoices, scorer=fuzz.token_set_ratio)[1] > 90:
+            currentVectorDifferenceValor = -1
+            print('TOTAAL', line[1][0])
             valorCoordArr = line[0]
             sum_x = 0
             sum_y = 0
@@ -137,17 +143,28 @@ def runPaddleOCR(img_path, lg=None):
                 valor_x_sum += c[0]
                 valor_y_sum += c[1]
 
-            valorAvg_x = valor_x_sum/4
-            valorAvg_y = valor_y_sum/4
+            valAvg_x = valor_x_sum/4
+            valAvg_y = valor_y_sum/4
 
-            xDiff = valorAvg_x - valorAvg_x
-            yDiff = valorAvg_y - valorAvg_y
+            xDiff = valAvg_x - valorAvg_x
+            yDiff = valAvg_y - valorAvg_y
 
             absolute_diff = (xDiff**2 + yDiff**2)**(1/2)
+            debug_arr.append((line[1][0], absolute_diff))
+
             
             if absolute_diff < currentVectorDifferenceValor or currentVectorDifferenceValor == -1:
                 currentVectorDifferenceValor = absolute_diff
-                jsonResult['valor'] = val.group()
+
+                if jsonResult.get('valor') == None:
+                    jsonResult['valor'] = val.group()
+                else:
+                    val = val.group()
+                    if (val.find('.') != -1 or val.find(',') != -1) and \
+                        val.replace('.', '', 1).replace(',', '', 1).isdigit() == True:
+                        jsonResult['valor'] = val
+                        
+                    
 
 
         #Vencimento
@@ -208,7 +225,9 @@ def runPaddleOCR(img_path, lg=None):
         for company in companies:
             if fuzz.token_set_ratio(str(line[1][0]), company) > 80:
                 jsonResult['nome'] = company
+        
 
+        #CHECK LATER
         if fuzz.token_set_ratio(str(line[1][0]), 'Valor Total') > 80:
             valorTotal = True
 
@@ -235,7 +254,7 @@ def runPaddleOCR(img_path, lg=None):
                         break
 
 
-    
+    print(debug_arr)
     print('end of for loop \n')
     print(f'\nOutput paddleNotaDebito (lang={lg}): {jsonResult} \n')
 
