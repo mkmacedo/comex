@@ -2,6 +2,7 @@ from re import M
 from DescricaoNFS import getCleanDescriptionType1
 
 docs_std_resolution = {
+                        'MULTI':{'NFS':(1240,1755),'boleto':(1240,1755)},
                         'MULTIRIO':{'NFS':(1240,1755),'boleto':(1240,1755)},
                         'ICTSI':{'NFS':(1240,1755),'boleto':(1240,1755), 'detalhamento_notafiscal': (1653,2339)},
                         'DHL':{'nota_debito':(1240,1755),'NFS':(1240,1755), 'cotacao': (1653, 2339)},
@@ -11,17 +12,17 @@ docs_std_resolution = {
                        }
 
 dict_document = {
-                'NFS': ['CNPJ', 'con', 'vencimento', 'nome', 'PO', 'valor', 'descricao','pesoBruto', 'taxaCambio'],  #'desconto'],
+                'NFS': ['CNPJ', 'con', 'vencimento', 'nome', 'DI', 'valor', 'descricao','pesoBruto', 'taxaCambio'],  #'desconto'],
                 'recibo_locacao': ['con', 'nome', 'PO', 'valor'],# 'contaContabil', 'centroCusto','desconto'],
-                'nota_debito': ['con', 'CNPJ', 'vencimento', 'emissao', 'nome', 'qtdContainer', 'valor','origem'], #'descricao','desconto'],
+                'nota_debito': ['con', 'CNPJ', 'vencimento', 'emissao', 'nome', 'qtdContainer', 'valor','origem', 'tipoContainer'], #'descricao','desconto'], tipoContainer
                 'mapa_faturamento': ['PO', 'con', 'valor', 'nome', 'CNPJ'],#'desconto'],
                 'fatura_duplicata': ['con', 'CNPJ', 'vencimento', 'nome', 'PO', 'valor', 'descricao', 'desconto'],#'desconto','valorAPagar']
                 'custo_frete':['nome', 'con','CNPJ','valor'], 
                 'DACTE':['con','CNPJ','nome','valor','vencimento'],
                 'fatura_frete':['CNPJ','vencimento','valor'],
-                'detalhamento_notafiscal':['valor','valorSemImposto','CIF','taxa','descricao','nome','moeda', 'dataEntrada', 'dataSaida'], #'tipoServico','periodo'
-                'minuta_calculo':['nome','valorCIF','valor','CNTR','descricao','periodo','dataEntrada', 'dataSaida'],#periodo = data de envio até data chegada
-                'boleto':['valor','data','con'],
+                'detalhamento_notafiscal':['valor','valorSemImposto','valorCIF','taxa','descricao','nome','moeda', 'dataEntrada', 'dataSaida', 'DI'], #'tipoServico','periodo'
+                'minuta_calculo':['nome','valorCIF','valor','CNTR','descricao','periodo','dataEntrada', 'dataSaida', 'DI'],#periodo = data de envio até data chegada
+                'boleto':['nome', 'valor','con', 'vencimento'],
                 'cotacao': ['sellID', 'tmsID', 'valorAEC', 'valorACC', 'valorAPB', 'nome']
                  }
 
@@ -206,8 +207,15 @@ dict_map[None]['fatura_frete'] = {'CNPJ':(322,440,102,113), 'vencimento':(1060,1
 
 #MULTI RIO
 dict_map['MULTIRIO'] = {}
-dict_map['MULTIRIO']['NFS'] = {'CNPJ': (213,365,295,313), 'con': (939,1050,135,157), 'vencimento': (898,1005,182,205),
-                          'nome': (278,618,320,339), 'PO': (115,1089,601,1066), 'valor': (639,810,1076,1098), 'descricao': (115,1089,601,1066)}
+dict_map['MULTIRIO']['NFS'] = {'CNPJ': (280,530,389,410), 'con': (1200,1450,176,213), 'vencimento': (10,20,10,20), 'DI': (152,1454,803,1414),
+                          'nome': (366,870,420,450), 'valor': (500,1220,1430,1464), 'descricao': (152,1454,1470,1890)}
+dict_map['MULTIRIO']['boleto'] = {'nome':(84,600,574,597),'con':(839,1110,182,210),'valor':(1190,1450,1682,1708),'vencimento':(1121,1290,182,210)}
+
+dict_map['MULTI'] = {}
+dict_map['MULTI']['NFS'] = {'CNPJ': (280,530,389,410), 'con': (1200,1450,176,213), 'vencimento': (10,20,10,20), 'DI': (152,1454,803,1414),
+                          'nome': (366,870,420,450), 'valor': (500,1220,1430,1464), 'descricao': (152,1454,1470,1890)}
+dict_map['MULTI']['boleto'] = {'nome':(84,600,574,597),'con':(839,1110,182,210),'valor':(1190,1450,1682,1708),'vencimento':(1121,1290,182,210)}
+
 
 #dict_map['MULTIRIO']['fatura_duplicata'] = {}
 #dict_map['MULTIRIO']['custo_frete'] = {}
@@ -224,12 +232,15 @@ dict_map['ICTSI']['NFS'] = {'CNPJ': (359,510,293,313), 'con': (957,1082,135,158)
 #dict_map['ICTSI']['mapa_faturamento'] = {}
 #dict_map['ICTSI']['recibo_locacao'] = {}
 #dict_map['ICTSI']['nota_debito'] = {}
-dict_map['ICTSI']['detalhamento_notafiscal'] = {'CIF':(650,830,835,890),'taxa':(1300,1500,835,890),'descricao':(62,1195,100,1395),'tipoServico':(60,1170,1525,1725),
+dict_map['ICTSI']['detalhamento_notafiscal'] = {'valorCIF':(650,830,835,890),'taxa':(1300,1500,835,890),'descricao':(62,1195,100,1395),'tipoServico':(60,1170,1525,1725), 'DI': (257, 420, 842, 875),
                                                 'nome':(40,400,45,150),'moeda':(995,1105,670,689),'periodo':(62,145,898,919),'valor':(10,20,10,20),'valorSemImposto':(10,20,10,20), 'dataEntrada': (1120, 1260, 440, 495), 'dataSaida': (1320,1440, 120, 175)}
+
+dict_map['ICTSI']['boleto'] = {'nome':(44,334,824,846),'con':(270,560,900,930),'valor':(1148,1520,960,992),'vencimento':(1148,1350,770,804)}
+
 
 #DHL
 dict_map['DHL'] = {}
-dict_map['DHL']['NFS'] = {'CNPJ': (361,571,249,267), 'con': (970,1042,54,73), 'vencimento': (960,1058,152,168),
+dict_map['DHL']['NFS'] = {'CNPJ': (361,571,249,267), 'con': (970,1042,54,73), 'vencimento': (960,1058,152,168), 'DI': (10,20,10,20),
                           'nome': (445,795,266,298),'valor': (355,465,1330,1345), 'descricao': (23,1209,593,1219), 'taxaCambio': (21, 1200, 1466, 1700)}
 
 #dict_map['DHL']['fatura_duplicata'] = {}
@@ -249,7 +260,8 @@ dict_map['MULTITERMINAIS'] = {}
 #dict_map['MULTITERMINAIS']['mapa_faturamento'] = {}
 #dict_map['MULTITERMINAIS']['recibo_locacao'] = {}
 #dict_map['MULTITERMINAIS']['nota_debito'] = {}
-dict_map['MULTITERMINAIS']['minuta_calculo'] = {'nome':(190,450,160,230),'valorCIF':(925,1095,402,425),'valor':(965,1091,969,1000),'CNTR':(365,427,510,550),'descricao':(160,530,735,850),'periodo':(670,870,600,640), 'dataEntrada':(895,975, 780, 810), 'dataSaida':(985,1070,780,810)}
+dict_map['MULTITERMINAIS']['minuta_calculo'] = {'nome':(190,450,160,230),'valorCIF':(925,1095,402,425),'valor':(965,1091,969,1000),'CNTR':(365,427,510,550),'descricao':(160,530,735,850),'periodo':(670,870,600,640), 'dataEntrada':(895,975, 780, 810), 'dataSaida':(985,1070,780,810), 'DI': (280,480,200,230)}
+dict_map['MULTITERMINAIS']['boleto'] = {'nome':(84,600,574,597),'con':(839,1110,182,210),'valor':(1190,1450,1682,1708),'vencimento':(1121,1290,182,210)}
 
 #SENIOR
 dict_map['SENIOR'] = {}
@@ -292,6 +304,7 @@ mapNameCNPJ = {
 
 mapLongShort = {
                 'MULTI': 'MULTI RIO OPERACOES PORTUARIAS S/A',
+                'MULTIRIO': 'MULTI RIO OPERACOES PORTUARIAS S/A',
                 'ICTSI': 'ICTSI RIO BRASIL TERMINAL 1 SA',
                 'DHL': 'DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA',
                 'MULTITERMINAIS': 'MULTITERMINAIS LOGISTICA INTEGRADA',
@@ -306,7 +319,7 @@ field_validation = {
                     'vencimento': r'[0-9][0-9]/[0-9][0-9]/(?:[0-9][0-9][0-9][0-9]|[0-9][0-9])',
                     'con': r'(?:[a-z]*[A-Z]*[0-9]+|/|-)+',
                     'CNPJ': r'[0-9][0-9]\.[0-9][0-9][0-9]\.[0-9][0-9][0-9]/[0-9][0-9][0-9][0-9]-[0-9][0-9]',
-                    'PO': r'[0-9][0-9]+',
+                    'DI': r'[0-9][0-9]+',
                     'CNTR': r'[0-9][0-9]',
                     'dataEntrada': r'(?:[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9])',
                     'dataSaida': r'(?:[0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9](?:-|/)[0-9][0-9](?:-|/)[0-9][0-9])'

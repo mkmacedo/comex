@@ -205,5 +205,5 @@ def runTesseractOCR(img_path):
     return jsonResult
 
 
-res = runTesseractOCR('20FS137029A_0.jpg')
-print(res)
+#res = runTesseractOCR('20FS137029A_0.jpg')
+#print(res)

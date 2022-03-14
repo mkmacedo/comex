@@ -17,7 +17,7 @@ from fuzzywuzzy import process
 #descricao
 
 
-def runPaddleOCR(img_path, lg=None):
+def runTesseractOCR(img_path, lg=None):
     cnpjFlag = False
     
     flagNumNota = False
@@ -180,5 +180,5 @@ def runPaddleOCR(img_path, lg=None):
     print(f'Output paddleMinutaCalculo (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-res = runPaddleOCR('Minuta DI 211911396-2_page-0001 (1)(1).jpg', 'en')
-print(res)
+#res = runPaddleOCR('Minuta DI 211911396-2_page-0001 (1)(1).jpg', 'en')
+#print(res)

@@ -93,4 +93,4 @@ def getCompanyName(img_path, lg=None):
             return None
 
 
-print(getCompanyName('20FS137029A_0.jpg'))
+#print(getCompanyName('20FS137029A_0.jpg'))

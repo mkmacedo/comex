@@ -303,5 +303,5 @@ def runPaddleOCR(img_path, lg=None):
     return jsonResult
 
 #res = runPaddleOCR('DETNF500218_0.jpg')
-res = runPaddleOCR('DETNF500218_1.jpg')
-print(res)
+#res = runPaddleOCR('DETNF500218_1.jpg')
+#print(res)

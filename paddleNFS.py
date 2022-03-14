@@ -200,5 +200,5 @@ def runPaddleOCR(img_path, lg=None):
     print(f'\nOutput paddleNFS (lang={lg}): {jsonResult} \n')
     return jsonResult
 
-res = runPaddleOCR('aéreoNFSDHL.jpg')
-print(res)
+#res = runPaddleOCR('aéreoNFSDHL.jpg')
+#print(res)

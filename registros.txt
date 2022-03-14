@@ -1,0 +1,2 @@
+MERCK_SA_AFR_EMA_GIG_20211108_SPOT_GRU_44359_0.jpg|{"sellID": "0102885825", "tmsID": "BRMESO18", "valorAEC": "404.00", "valorACC": "417.52", "valorAPB": "512.23", "nome": "DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA", "tipoDocumento": "cotacao"}
+MERCK_SA_AFR_EMA_GIG_20211108_SPOT_GRU_44359_2.jpg|{"sellID": "lriaionin cata", "tmsID": "IVia TTUCK \u00a9 NIT", "valorAEC": "applicable,", "valorACC": ") \u2014", "valorAPB": "USD)", "nome": "DHL GLOBAL FORWARDING (BRAZIL) LOGISTICS LTDA", "tipoDocumento": "cotacao"}

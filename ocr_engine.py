@@ -18,6 +18,7 @@ import tesseractCustoFrete
 import tesseractFaturaDuplicata
 import tesseractMinutaCalculo
 import paddleDetalhamentoNFS
+import paddleCotacao
 
 #from PIL import Image
 from fuzzywuzzy import fuzz
@@ -83,7 +84,11 @@ def runPaddleOCR(img_path, docType=None):
                 'detalhamento_notafiscal': [lambda : paddleDetalhamentoNFS.runPaddleOCR(img_path, 'en'),
                                             lambda : paddleDetalhamentoNFS.runPaddleOCR(img_path),
                                             lambda : paddleDetalhamentoNFS.runPaddleOCR(img_path, 'latin'),
-                                            lambda : tesseractNFS.runTesseractOCR(img_path)]
+                                            lambda : tesseractNFS.runTesseractOCR(img_path)],
+                'cotacao': [lambda : paddleCotacao.runPaddleOCR(img_path, 'en'),
+                                            lambda : paddleCotacao.runPaddleOCR(img_path),
+                                            lambda : paddleCotacao.runPaddleOCR(img_path, 'latin'),
+                                            lambda : paddleCotacao.runTesseractOCR(img_path)]
                 }
 
     if docType == None:

@@ -15,7 +15,8 @@ from documentType import getDocType
 from compareAmounts import greater
 from ReadJson import printJson
 from CurrencyFormat import switchValue
-from Periodo import getPeriodo
+#from descricaoNFS import getCleanDescription
+#from Periodo import getDias
 import pytesseract
 import numpy as np
 import cv2 # OpenCV
@@ -97,12 +98,10 @@ def isolate_field(image, x1, x2, y1, y2, coords: tuple):
 def nomeFornecedor(filename, full_name=False):
   img = cv2.imread(filename)
   img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-  #cv2.imwrite(filename, img)
-
   config_tesseract = '--oem 3  --psm 11'
   texto = pytesseract.image_to_string(img, config=config_tesseract)
   
-  vetorResul = re.findall(r'MULTI RIO(?: OPERACOES)?(?: PORTUARIAS)?(?: S/A)?|MULTITERMINAIS|ICTSI(?: RIO)(?: BRASIL) TERMINAL 1 SA|DHL(?: GLOBAL)?(?: FORWARDING)?(?: \( BRAZIL\))?(?: LOGISTICS LTDA|KUEHNE(?:.)?NAGEL)?', texto, flags=re.I)
+  vetorResul = re.findall(r'AGV LOGISTICA(?: SA)?|RIO LOPES TRANSPORTES(?: LTDA)?|GKO INFORMATICA LTDA|MOVEIDEIAS CONSULTORIA E INTEGRACAO DE NEGOCIOS LTDA - EPP|RODOLOG TRANSPORTES MULTIMODAIS(?: LTDA)?|RUNTEC(?: INFOMATICA)?(?: LTDA)?|SHIFT(?: GESTAO)?(?: DE)?(?: SERVICOS)?(?: LTDA)?|DENISE DOS ANJOS PINTO LUCENA|DIREMADI(?: MARKETING)?(?: E)?(?: SERVICOS)?(?: LTDA)?|LINE EXPRESS(?: TRANSPORTES)?(?: E)?(?: DISTRIBUICAO)?(?: LTDA)?|LINEX|ANDREANI(?: LOGISTICA)?|FL ?BRASIL(?: HOLDING)?|SENIOR(?: SISTEMAS)?(?: S/?A)?', texto, flags=re.I)
   if len(vetorResul) > 0:
     result = vetorResul[0].split(" ")
     company = result[0]
@@ -113,14 +112,14 @@ def nomeFornecedor(filename, full_name=False):
       else:
         if company in list(mapLongShort.keys()):
           company = mapLongShort.get(company).split()
-    print('NOME::::', company)
+
     return company.upper()
 
   else:
     company = getCompanyName(filename)
     if full_name == False and company != None:
       company = company.split()[0]
-    print('NOME::::', company)
+
     return company
 
 
@@ -152,12 +151,22 @@ def getField(filename, company, field, document, params=None):
   else:
     texto = pytesseract.image_to_string(info, config=params)
 
-  if field == 'DI':
-    if document == 'NFS':
-      di = re.search(r'DI:? ?[0-9]+', texto)
-      if di != None:
-        di = re.search(r'[0-9]+', di.group())
-        texto = di.group()
+  if field == 'PO':
+    if document == 'mapa_faturamento':
+      po = re.search(r'(?:(?:PO|Pedido|P0)[^0-9]+)[0-9]+', texto)
+      if po != None:
+        poRegexList = re.findall(r'[0-9]+', po.group())
+        lenPO = 0
+        for e in poRegexList:
+          if len(e) > lenPO:
+            lenPO = len(e)
+            finalPO = e
+        texto = finalPO
+    elif document == 'NFS':
+      po = re.search(r'(?:PO|Pedido):? [0-9]+', texto)
+      if po != None:
+        po = re.search(r'[0-9]+', po.group())
+        texto = po.group()
   elif field == 'valor':
     valor = re.search(r'(?:R$)? ?[0-9]+\.?[0-9]+(?:,[0-9][0-9])?', texto)
     if valor == None:
@@ -187,7 +196,7 @@ def extract_data(filename, company, document):
           if tempFuzzy > nameFuzzy:
             info[field] = c
             nameFuzzy = tempFuzzy
-    
+
     elif field == 'descricao' and document == 'NFS':
       if descriptionByNFSType.get(company) != None:
         desc = info.get(field)
@@ -195,8 +204,9 @@ def extract_data(filename, company, document):
           desc = descriptionByNFSType[company](desc)
           info[field] = desc
 
+
     #PO - NUMERIC    
-    elif field == 'DI':
+    elif field == 'PO':
       s = re.match(r'[0-9]+', info[field])
       if s == None:
         info[field] = ''
@@ -232,6 +242,59 @@ def extract_data(filename, company, document):
   return info
 
 
+def compare(nota):
+
+  check = False
+
+  temp = {}
+  t = nota['nome'].split()
+  temp[nota['nome']] = ''
+  for e in t:
+    temp[nota['nome']] += e
+  
+  temp['valor'] = ''
+  valor = re.findall(r'[0-9]+|,[0-9][0-9]', str(nota.get('valor')))
+  for e in valor:
+    if e != ',00':
+      temp['valor'] += e
+
+  if re.search(r',[0-9][0-9]', temp['valor']) != None:
+    temp['valor'] = re.sub(',', '.', temp['valor'])
+
+  temp['con'] = re.search(r'[1-9][0-9]+', str(nota.get('con')))
+  if temp['con'] != None:
+    temp['con'] = temp['con'].group()
+  else:
+    temp['con'] = '000'
+
+  api_json = API_Client('https://wise.klink.ai/api/admin/list/planilhavalidacao/'+temp[nota['nome']]+'/'+str(temp['con'])).result
+  
+  if len(api_json) > 0:
+    for i in api_json:
+      if i.get('valorFatura') == temp['valor']:
+        check = True
+        break
+
+  if check == True:
+    nota['planilha'] = 'true'
+    nota['validacao'] = 'true'
+  else:
+    nota['planilha'] = 'false'
+
+  if(check == False):
+    if nota.get("PO") != None:
+      #verifica PO
+      if re.search(r'[0-9]+', nota.get("PO")) == None:
+        nota['validacao'] = 'false'
+      else:
+        nota['validacao'] = 'true'
+    else:
+      nota['validacao'] = 'false'
+  
+  return nota
+
+
+
 def run_ocr(filename, document, company):
   if company != None:
     #api_json = API_Client('https://wise.klink.ai/api/admin/list/planilhavalidacao/AGVLOGISTICA/494112').result
@@ -249,18 +312,17 @@ def run_ocr(filename, document, company):
     if(contaContabil != None):
       dados['conta_contabil'] = contaContabil
 
-    if dados.get('valor') != None:
-      if dados.get('desconto') != None:
-        dados['valorBruto'] = dados['valor'] - dados['desconto']
-      else:
-        dados['valorBruto'] = dados['valor']
+    if dados.get('desconto') != None:
+      dados['valorBruto'] = dados['valor'] - dados['desconto']
+    else:
+      dados['valorBruto'] = dados['valor']
 
     if(dados.get('descricao') != None):
       dados['descricao'] = re.sub('\n', ' ', dados['descricao'])
 
     dados['tipoDocumento'] = document
 
-    res = dados
+    res = compare(dados)
 
   else:
     res = extract_data(filename, None, document)
@@ -350,8 +412,7 @@ def runPipeline(file, docType, companyName):
         except:
           traceback.print_exc()
           print('Unable to read file. \n')
-          out = {}
-          return out#, pageOutputName
+          return {}#, pageOutputName
       finally:
         print('Validando informações extraidas')
         for info in dict_document[docType]:
@@ -361,12 +422,7 @@ def runPipeline(file, docType, companyName):
               out[info] = temp.group()
             else:
               out[info] = None
-        
-        if docType in ['detalhamento_notafiscal', 'minuta_calculo']:
-          if out.get('dataEntrada') != None and out.get('dataSaida') != None:
-            p = getPeriodo(out.get('dataEntrada'), out.get('dataSaida'))
-            if p != None:
-              out['periodo'] = p
+
         print('SAIDA PIPELINE:', out, '\n')
         return out#, pageOutputName
 
@@ -436,11 +492,6 @@ def runPipeline(file, docType, companyName):
                 else:
                   out[info] = None
 
-            if docType in ['detalhamento_notafiscal', 'minuta_calculo']:
-              if out.get('dataEntrada') != None and out.get('dataSaida') != None:
-                p = getPeriodo(out.get('dataEntrada'), out.get('dataSaida'))
-                if p != None:
-                  out['periodo'] = p
             print('SAIDA PIPELINE:', out,'\n')
             return out#, pageOutputName
           
