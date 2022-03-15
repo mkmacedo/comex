@@ -54,3 +54,4 @@ def getCompanyName(img_path, lg=None):
 
 
 #print(getCompanyName('Diremadi_0.pdf'))
+print(getCompanyName('NF500218Boleto_0.jpg', 'pt'))

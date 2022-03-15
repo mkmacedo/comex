@@ -20,7 +20,7 @@ def getDocType(img_path, lg=None):
     if lg == None:
         ocr = PaddleOCR(use_angle_cls=True)
     else:
-        ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        ocr = PaddleOCR(use_angle_cls=True, lang=lg)
 
     result = ocr.ocr(img_path, cls=True)
 
@@ -30,6 +30,7 @@ def getDocType(img_path, lg=None):
     maxLCS = 0
     maxHier = 0
     for line in result:
+        print('LINE',line)
         
         for docName in docTypeList:
             if fuzz.token_set_ratio(line[1][0].lower(), docName) > 80:
@@ -52,6 +53,6 @@ def getDocType(img_path, lg=None):
 #runPaddleOCR('AGV_RL.jpg')
 #runPaddleOCR('Diremadi.pdf_1.jpg')
 #getDocType('Notas/FATCCC001751938.jpg')
-#getDocType('Diremadi_1.jpg')
+#print(getDocType('NF500218Boleto_0.jpg', 'en'))
 
 

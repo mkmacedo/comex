@@ -19,6 +19,7 @@ import tesseractFaturaDuplicata
 import tesseractMinutaCalculo
 import paddleDetalhamentoNFS
 import paddleCotacao
+import tesseractCotacao
 
 #from PIL import Image
 from fuzzywuzzy import fuzz
@@ -88,7 +89,11 @@ def runPaddleOCR(img_path, docType=None):
                 'cotacao': [lambda : paddleCotacao.runPaddleOCR(img_path, 'en'),
                                             lambda : paddleCotacao.runPaddleOCR(img_path),
                                             lambda : paddleCotacao.runPaddleOCR(img_path, 'latin'),
-                                            lambda : tesseractCotacao.runTesseractOCR(img_path)]
+                                            lambda : tesseractCotacao.runTesseractOCR(img_path)],
+                'boleto': [lambda : paddleCotacao.runPaddleOCR(img_path, 'en'),
+                                            lambda : paddleCotacao.runPaddleOCR(img_path),
+                                            lambda : paddleCotacao.runPaddleOCR(img_path, 'latin'),
+                                            lambda : tesseractCotacao.runTesseractOCR(img_path)],
                 }
 
     if docType == None:

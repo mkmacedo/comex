@@ -51,13 +51,17 @@ def getCompanyName(img_path, lg=None):
         return companyName
     
     else:
+
+        img = cv2.imread(img_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #cv2.imwrite('aaaaaaaaaaaa.jpg', img)
         config_tesseract = '--oem 3  --psm 11'
         texto = pytesseract.image_to_string(img, config=config_tesseract)
         texto = texto.lower()
 
         tempResult = texto.split('\n')
         result =[]
-        
+
         for r in tempResult:
             if r != '':
                 result.append(r)
@@ -65,6 +69,7 @@ def getCompanyName(img_path, lg=None):
         maxLCS = 0
         maxFuzz = 0
         for line in result:
+            print(line)
             for company in companies:
                 splitCompany = company.split()
                 splitString = str(line).split()
@@ -85,12 +90,14 @@ def getCompanyName(img_path, lg=None):
                             companyName = company
                             maxFuzz = max(tempFuzzTokenSetRatio, tempFuzzPartialRatio)
                             maxLCS = lcsResult
-        
+
         if companyName != None:
-            print(f'\n{img_path} -> Nome do fornecedor idenficiado: {companyName} (Tesseract) \n')
+            print(f'\n{img_path} -> Nome do fornecedor idenficiado: {companyName} (Paddle) \n')
             return companyName
-        else:
-            return None
 
 
-#print(getCompanyName('20FS137029A_0.jpg'))
+        return None
+
+
+#print(getCompanyName('Diremadi_0.pdf'))
+#print(getCompanyName('NF500218Boleto_0.jpg'))

@@ -36,7 +36,7 @@ def getDocumentType(filename):
   texto = pytesseract.image_to_string(img, config=config_tesseract)
   texto = texto.lower()
   
-  vetorResultado = re.findall(r'fatura.?duplicata|mapa(?: de)? faturamento|recibo de locação|recibo(?: de) locacao|nota fiscal de serviço|nota fiscal|\
+  vetorResultado = re.findall(r'fatura.?duplicata|recibo de locação|nota fiscal de serviço|nota fiscal|corte na linha(?: de)?(?: baixo)?|banco|\
   nfs-e|nfs|fatura duplicata|nota fiscal eletronica de servicos e fatura|custo de frete|custo de frete|nota de debito|nota de débito|dacte|conferencia de faturas|duplicata|comprovante(?: de)? entrega', texto, flags=re.I)
 
   standardized_docs_list = []
@@ -52,10 +52,23 @@ def getDocumentType(filename):
       docPriority = docHierarchy[d]
       doc = d
 
+  getTypeFunctions = [lambda: getDocType(filename), lambda: getDocType(filename, 'en'), 
+    lambda: getDocType(filename, 'latin')]
   if doc == None or doc == '':
-    doc = getDocType(filename)
+    for f in getTypeFunctions:
+      if doc == None:
+        doc = f()
+      else:
+        break
+    
   elif doc == 'NFS':
-    check = getDocType(filename)
+    
+    check = None 
+    for f in getTypeFunctions:
+      if check == None:
+        check = f()
+      else:
+        break
     if check != doc and check != None:
       if docHierarchy[check] > docHierarchy[doc]:
         doc = check

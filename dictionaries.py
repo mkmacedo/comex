@@ -46,9 +46,13 @@ docTypeMap = {
                 'minuta de calculo':'minuta_calculo',
                 'minuta calculo':'minuta_calculo',
                 'Minuta de Cáculo':'minuta_calculo',
-                'Air Freight Shipment Specific Quotation for MERCK SA': 'cotacao',
+                'Air Freight Shipment Specific Quotation for': 'cotacao',
                 'Specific Quotation': 'cotacao',
-                'Air Freight Shipment': 'cotacao'
+                'Air Freight Shipment': 'cotacao',
+                'corte na linha abaixo': 'boleto',
+                'corte na linha': 'boleto',
+                'banco': 'boleto',
+                'banto itau': 'boleto'
                 }
 
 docHierarchy = {
@@ -209,12 +213,12 @@ dict_map[None]['fatura_frete'] = {'CNPJ':(322,440,102,113), 'vencimento':(1060,1
 dict_map['MULTIRIO'] = {}
 dict_map['MULTIRIO']['NFS'] = {'CNPJ': (280,530,389,410), 'con': (1200,1450,176,213), 'vencimento': (10,20,10,20), 'DI': (152,1454,803,1414),
                           'nome': (366,870,420,450), 'valor': (500,1220,1430,1464), 'descricao': (152,1454,1470,1890)}
-dict_map['MULTIRIO']['boleto'] = {'nome':(84,600,574,597),'con':(839,1110,182,210),'valor':(1190,1450,1682,1708),'vencimento':(1121,1290,182,210)}
+dict_map['MULTIRIO']['boleto'] = {'nome':(84,600,574,597),'con':(630,830,136,163),'valor':(1190,1450,1682,1708),'vencimento':(885,1010,385,410)}
 
 dict_map['MULTI'] = {}
 dict_map['MULTI']['NFS'] = {'CNPJ': (280,530,389,410), 'con': (1200,1450,176,213), 'vencimento': (10,20,10,20), 'DI': (152,1454,803,1414),
                           'nome': (366,870,420,450), 'valor': (500,1220,1430,1464), 'descricao': (152,1454,1470,1890)}
-dict_map['MULTI']['boleto'] = {'nome':(84,600,574,597),'con':(839,1110,182,210),'valor':(1190,1450,1682,1708),'vencimento':(1121,1290,182,210)}
+dict_map['MULTI']['boleto'] = {'nome':(84,600,574,597),'con':(630,830,136,163),'valor':(1190,1450,1682,1708),'vencimento':(885,1010,385,410)}
 
 
 #dict_map['MULTIRIO']['fatura_duplicata'] = {}
@@ -314,9 +318,9 @@ mapLongShort = {
                 }
 
 field_validation = {
-                    'nome': r'(?:[a-zA-Z]+| |\(|\)|[0-9])+',
+                    'nome': r'(?:[a-zA-Z]+| |\(|\)|[0-9]|/)+',
                     'valor': r'(?:[0-9]+\.?)+(?:,[0-9][0-9])?',
-                    'vencimento': r'[0-9][0-9]/[0-9][0-9]/(?:[0-9][0-9][0-9][0-9]|[0-9][0-9])',
+                    'vencimento': r'[0-9][0-9](?:/|\.|-)[0-9][0-9](?:/|\.|-)(?:[0-9][0-9][0-9][0-9]|[0-9][0-9])',
                     'con': r'(?:[a-z]*[A-Z]*[0-9]+|/|-)+',
                     'CNPJ': r'[0-9][0-9]\.[0-9][0-9][0-9]\.[0-9][0-9][0-9]/[0-9][0-9][0-9][0-9]-[0-9][0-9]',
                     'DI': r'[0-9][0-9]+',
